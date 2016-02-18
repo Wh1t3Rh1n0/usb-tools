@@ -6,11 +6,13 @@
 ## on a given USB flash drive so that it is compatible with Microsoft Windows.
 ##
 ## Usage: 
+##
 ##         format-usb [device] [optional partition label] [optional fs type]
 ##
 ## You must provide a label if specifying the filesystem type.
 ##
 ## Accepted filesystem flags:
+##
 ##         --ntfs
 ##         --exfat
 ##         --none
