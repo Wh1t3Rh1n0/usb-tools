@@ -2,20 +2,21 @@
 ##
 ## format-usb
 ## ----------
-## Quickly create an msdos partition table and a single, FAT32 filesystem
-## on a given USB flash drive for use with Windows.
+## Quickly create an msdos partition table and a single, formatted partition
+## on a given USB flash drive so that it is compatible with Microsoft Windows.
 ##
-## Usage: format-usb [device] [optional partition label] [optional fs type]
+## Usage: 
+##         format-usb [device] [optional partition label] [optional fs type]
 ##
 ## You must provide a label if specifying the filesystem type.
 ##
 ## Accepted filesystem flags:
-##    --ntfs
-##    --exfat
-##    --none
+##         --ntfs
+##         --exfat
+##         --none
 ##
 if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] ; then
-  grep -E '^##[^#]?' "$0"
+  grep -E '^##[^#]?' "$0" | sed -E 's/## ?//g'
   if [ "$1" == "" ] ; then
     echo
     echo "Available devices:"
