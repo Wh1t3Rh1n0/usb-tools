@@ -3,6 +3,7 @@ usb-tools
 Tools for Quickly Formatting and Partitioning USB Flash Drives
 
 The rest of this file was automatically generated with the following command:
+
         (for f in * ; do ./$f --help | sed -E 's/^## ?//g' ; done) >> README.md
 
 
