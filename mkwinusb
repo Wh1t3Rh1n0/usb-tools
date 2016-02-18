@@ -1,0 +1,79 @@
+#!/bin/bash
+##
+## mkwinusb
+## --------
+## Create a bootable USB Windows 7, 8, or 10 install media from an ISO
+##
+## Usage: mkwinusb [ISO] [device] <optional FS label>
+##
+if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] ; then
+  grep -E '^##[^#]?' "$0"
+  if [ "$1" == "" ] ; then
+    echo
+    echo "Available devices:"
+    fdisk -l | grep -E '/dev/sd[a-z][^0-9]'
+    echo
+  fi
+  exit
+fi
+
+ISO=$1
+DEVICE=$2
+LABEL=$3
+
+if [ "$LABEL" == "" ]; then
+    LABEL=Windows
+fi
+
+# Check whether format-usb is in the current directory or available in the
+# path.
+if  ! ( [ -e "./format-usb" ] || which-usb ) ; then
+    echo "Cannot find format-usb in the current directory or the default path."
+    exit
+fi
+FORMATUSB=$(which format-usb || echo ./format-usb)
+
+
+# Check that ms-sys is installed
+if [ "$(which ms-sys)" == "" ] ; then
+    cat <<EOF
+You must install ms-sys for this script to work.
+
+Download here: http://sourceforge.net/projects/ms-sys/files/
+EOF
+    exit
+fi
+
+# Check that the ISO is valid
+#if [ "$(file \"$ISO\" | grep -iEo 'bootable')" == "" ] ; then
+#    echo "The ISO you are using does not appear to be a bootable Windows ISO."
+#    exit
+#fi
+
+# Format the flash drive
+$FORMATUSB $DEVICE "$LABEL" --ntfs
+
+
+# Install the Windows MBR
+ms-sys -7 $DEVICE
+
+TMPDIR=/tmp/mkwinusb
+
+# Mount the ISO
+mkdir -p $TMPDIR/iso
+mount "$ISO" $TMPDIR/iso -o loop,ro
+
+# Mount the USB
+mkdir -p $TMPDIR/usb
+mount -t ntfs $DEVICE"1" $TMPDIR/usb -o rw
+
+# Copy all files from the ISO to the USB
+cp -Rv $TMPDIR/iso/* $TMPDIR/usb
+
+# Unmount the ISO and USB
+umount $TMPDIR/iso
+umount $TMPDIR/usb
+
+echo 'Done!'
+
+#eject $DEVICE && echo "$DEVICE Ejected"'!' && echo "Please remove the flash drive now."
