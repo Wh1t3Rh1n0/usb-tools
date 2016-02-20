@@ -1,12 +1,12 @@
 #!/bin/bash
 ##
-## mkwinusb
-## --------
-## Create a bootable USB Windows 7, 8, or 10 install media from an ISO
+## mkkaliusb
+## ---------
+## Create a bootable Kali Linux live USB flash drive from an ISO
 ##
 ## Usage:
 ##
-##         mkwinusb [ISO] [device] <optional FS label>
+##         mkkaliusb [ISO] [device] <optional FS label>
 ##
 if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] ; then
   grep -E '^##[^#]?' "$0" | sed -E 's/## ?//g'
@@ -24,7 +24,7 @@ DEVICE=$2
 LABEL=$3
 
 if [ "$LABEL" == "" ]; then
-    LABEL=Windows
+    LABEL=Kali
 fi
 
 # Check whether format-usb is in the current directory or available in the
@@ -35,17 +35,6 @@ if  ! ( [ -e "./format-usb" ] || which format-usb ) ; then
 fi
 FORMATUSB=$(which format-usb || echo ./format-usb)
 
-
-# Check that ms-sys is installed
-if [ "$(which ms-sys)" == "" ] ; then
-    cat <<EOF
-You must install ms-sys for this script to work.
-
-Download here: http://sourceforge.net/projects/ms-sys/files/
-EOF
-    exit
-fi
-
 # Check that the ISO is valid
 #if [ "$(file \"$ISO\" | grep -iEo 'bootable')" == "" ] ; then
 #    echo "The ISO you are using does not appear to be a bootable Windows ISO."
@@ -53,13 +42,13 @@ fi
 #fi
 
 # Format the flash drive
-$FORMATUSB $DEVICE "$LABEL" --ntfs
+$FORMATUSB $DEVICE "$LABEL"
 
-
-# Install the Windows MBR
-ms-sys -7 $DEVICE
-
-TMPDIR=/tmp/mkwinusb
+TMPDIR=/tmp/mkkaliusb
+umount -f $TMPDIR/iso
+umount -f $TMPDIR/usb
+#rm -rfv $TMPDIR
+mkdir $TMPDIR
 
 # Mount the ISO
 mkdir -p $TMPDIR/iso
@@ -67,13 +56,21 @@ mount "$ISO" $TMPDIR/iso -o loop,ro
 
 # Mount the USB
 mkdir -p $TMPDIR/usb
-mount -t ntfs $DEVICE"1" $TMPDIR/usb -o rw
+mount -t vfat $DEVICE"1" $TMPDIR/usb -o rw
+
+#echo Flash drive formatted and mounted.
+#echo Install grub and grub.cfg now
+#read -p "Press ENTER to continue"
+
+grub-install --boot-directory=$TMPDIR/usb/boot --efi-directory=$TMPDIR/usb --force --removable --uefi-secure-boot $DEVICE
+cp $TMPDIR/iso/boot/grub/loopback.cfg $TMPDIR/usb/boot/grub/grub.cfg
+  
+
 
 # Copy all files from the ISO to the USB
 cp -Rv $TMPDIR/iso/* $TMPDIR/usb
 
 # Unmount the ISO and USB
-sync
 umount $TMPDIR/iso
 umount $TMPDIR/usb
 

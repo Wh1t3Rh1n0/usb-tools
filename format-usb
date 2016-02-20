@@ -54,7 +54,7 @@ fi
 # Unmount current partitions
 for d in $(mount | grep "$1" | cut -d ' ' -f 1); do 
   echo $d
-  umount -f $d
+  umount -f $d || exit
 done
 
 
