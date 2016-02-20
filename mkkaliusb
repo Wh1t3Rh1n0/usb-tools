@@ -35,6 +35,16 @@ if  ! ( [ -e "./format-usb" ] || which format-usb ) ; then
 fi
 FORMATUSB=$(which format-usb || echo ./format-usb)
 
+if ! ( which grub-install || which fatattr ) ; then
+    cat <<EOF
+One or more dependencies are missing.
+Please make sure the following packages are installed:
+    grub-pc
+    fatattr
+EOF
+exit
+fi
+
 # Check that the ISO is valid
 #if [ "$(file \"$ISO\" | grep -iEo 'bootable')" == "" ] ; then
 #    echo "The ISO you are using does not appear to be a bootable Windows ISO."
@@ -44,7 +54,7 @@ FORMATUSB=$(which format-usb || echo ./format-usb)
 # Format the flash drive
 $FORMATUSB $DEVICE "$LABEL"
 
-TMPDIR=/tmp/mkkaliusb
+TMPDIR=/tmp/$(basename "$0")
 umount -f $TMPDIR/iso
 umount -f $TMPDIR/usb
 #rm -rfv $TMPDIR
@@ -62,18 +72,41 @@ mount -t vfat $DEVICE"1" $TMPDIR/usb -o rw
 #echo Install grub and grub.cfg now
 #read -p "Press ENTER to continue"
 
-grub-install --boot-directory=$TMPDIR/usb/boot --efi-directory=$TMPDIR/usb --force --removable --uefi-secure-boot $DEVICE
+#grub-install --boot-directory=$TMPDIR/usb/boot --efi-directory=$TMPDIR/usb --force --removable --uefi-secure-boot $DEVICE
+# Install grub for non-EFI systems
+grub-install --boot-directory=$TMPDIR/usb/boot --target=i386-pc --force --removable $DEVICE
 cp $TMPDIR/iso/boot/grub/loopback.cfg $TMPDIR/usb/boot/grub/grub.cfg
-  
-
+#sed -iE 's/Debian/Kali/g' $TMPDIR/usb/boot/grub/grub.cfg
+# Create files for EFI boot
+cp -Rv EFI $TMPDIR/usb/
+#cp $TMPDIR/iso/boot/grub/loopback.cfg $TMPDIR/usb/EFI/Boot/grub.cfg
 
 # Copy all files from the ISO to the USB
-cp -Rv $TMPDIR/iso/* $TMPDIR/usb
+cp -RvL $TMPDIR/iso/* $TMPDIR/usb
+
+# Fix Ubuntu boot options to detect flash drive
+sed -i -E 's#file=/cdrom/preseed/.+\.seed#live-media-path=/casper/ ignore_uuid#g' "$TMPDIR/usb/boot/grub/grub.cfg"
+sed -i -E 's#file=/cdrom/preseed/.+\.seed#live-media-path=/casper/ ignore_uuid#g' "$TMPDIR/usb/EFI/Boot/grub.cfg"
+
+# Apply the flash drive label using autorun.inf
+cat <<EOF > "$TMPDIR/usb/autorun.inf"
+[autorun]
+;open=explorer.exe
+;icon=icon.ico,0
+label=$LABEL
+
+[Content]
+MusicFiles=True
+PictureFiles=True
+VideoFiles=True
+EOF
+
+# Hide all files on the flash drive from Windows
+fatattr +r +h +s $TMPDIR/usb/*
 
 # Unmount the ISO and USB
 umount $TMPDIR/iso
 umount $TMPDIR/usb
 
-echo 'Done!'
-
+echo 'DONE! Eject flash drive with "eject '$DEVICE'".'
 #eject $DEVICE && echo "$DEVICE Ejected"'!' && echo "Please remove the flash drive now."
