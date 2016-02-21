@@ -2,8 +2,16 @@
 ##
 ## mkkaliusb
 ## ---------
-## Create a Kali or Ubuntu Linux USB flash drive that is bootable both from
-## BIOS and EFI.
+## Create a Kali or Ubuntu Linux USB flash drive with the following 
+## characteristics:
+##
+## * A single FAT32 filesystem - The entire flash drive is still readable and
+##   writable from Windows and other operating systems.
+##
+## * Bootable on legacy PCs via BIOS and modern PCs and Macs via EFI.
+##
+## * All boot files have the hidden, system, and read-only flags set so they
+##   are not visible by default on Windows operating systems.
 ##
 ## Usage:
 ##
