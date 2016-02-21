@@ -25,6 +25,16 @@ Accepted filesystem flags:
         --none
 
 
+mkkaliusb
+---------
+Create a Kali or Ubuntu Linux USB flash drive that is bootable both from
+BIOS and EFI.
+
+Usage:
+
+        mkkaliusb [ISO] [device] <optional FS label>
+
+
 mkwinusb
 --------
 Create a bootable USB Windows 7, 8, or 10 install media from an ISO

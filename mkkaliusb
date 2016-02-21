@@ -2,12 +2,14 @@
 ##
 ## mkkaliusb
 ## ---------
-## Create a bootable Kali Linux live USB flash drive from an ISO
+## Create a Kali or Ubuntu Linux USB flash drive that is bootable both from
+## BIOS and EFI.
 ##
 ## Usage:
 ##
 ##         mkkaliusb [ISO] [device] <optional FS label>
 ##
+
 if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] ; then
   grep -E '^##[^#]?' "$0" | sed -E 's/## ?//g'
   if [ "$1" == "" ] ; then
