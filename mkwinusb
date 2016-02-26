@@ -59,7 +59,7 @@ $FORMATUSB $DEVICE "$LABEL" --ntfs
 # Install the Windows MBR
 ms-sys -7 $DEVICE
 
-TMPDIR=/tmp/mkwinusb
+TMPDIR=/tmp/mkwinusb.$(date +'%m%d%H%M%S')
 
 # Mount the ISO
 mkdir -p $TMPDIR/iso

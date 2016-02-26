@@ -65,10 +65,7 @@ fi
 # Format the flash drive
 $FORMATUSB $DEVICE "$LABEL"
 
-TMPDIR=/tmp/$(basename "$0")
-umount -f $TMPDIR/iso
-umount -f $TMPDIR/usb
-#rm -rfv $TMPDIR
+TMPDIR=/tmp/$(basename "$0").$(date +'%m%d%H%M%S')
 mkdir $TMPDIR
 
 # Mount the ISO
