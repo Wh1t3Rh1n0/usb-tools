@@ -64,7 +64,8 @@ dd if=/dev/zero of=$DEVICE bs=512 count=1
 # Overwrite the last 10 MB of the device
 DEVSIZE=$( fdisk -l | grep "$DEVICE" | grep Disk | grep -iEo '[0-9]+ bytes' | cut -d ' ' -f 1 )
 SEEKTO=$(expr $DEVSIZE - 10485760)
-dd if=/dev/zero of=$DEVICE seek=$SEEKTO status=progress oflag=seek_bytes bs=512k
+#dd if=/dev/zero of=$DEVICE seek=$SEEKTO status=progress oflag=seek_bytes bs=512k
+dd if=/dev/zero of=$DEVICE seek=$SEEKTO oflag=seek_bytes bs=512k
 
 partprobe >/dev/null 2>/dev/null
 
