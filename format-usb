@@ -57,15 +57,16 @@ for d in $(mount | grep "$1" | cut -d ' ' -f 1); do
   umount -f $d || exit
 done
 
-
-# Overwrite MBR and partition table
-dd if=/dev/zero of=$DEVICE bs=512 count=1
+# Overwrite the first 10 MB of the device
+dd if=/dev/zero of=$DEVICE bs=1M count=10
+echo Please wait...
 
 # Overwrite the last 10 MB of the device
 DEVSIZE=$( fdisk -l | grep "$DEVICE" | grep Disk | grep -iEo '[0-9]+ bytes' | cut -d ' ' -f 1 )
 SEEKTO=$(expr $DEVSIZE - 10485760)
 #dd if=/dev/zero of=$DEVICE seek=$SEEKTO status=progress oflag=seek_bytes bs=512k
 dd if=/dev/zero of=$DEVICE seek=$SEEKTO oflag=seek_bytes bs=512k
+echo Please wait...
 
 partprobe >/dev/null 2>/dev/null
 
@@ -73,12 +74,13 @@ partprobe >/dev/null 2>/dev/null
 #read -p a
 
 # Wipe out any existing GPT
-cat <<EOF | gdisk $DEVICE
-x
-z
-y
-y
-EOF
+#cat <<EOF | gdisk $DEVICE
+#x
+#z
+#y
+#y
+#EOF
+#echo Please wait...
 
 partprobe >/dev/null 2>/dev/null
 
@@ -92,6 +94,7 @@ mktable
 msdos
 quit
 EOF
+echo Please wait...
 
 partprobe >/dev/null 2>/dev/null
 
@@ -123,6 +126,7 @@ t
 $FSTYPE
 w
 EOF
+echo Please wait...
 partprobe >/dev/null 2>/dev/null
 
 #read -p 3
@@ -157,11 +161,13 @@ else
         mkfs.vfat $DEVICE"1"
     fi
 fi
+echo Please wait...
 sync
 partprobe >/dev/null 2>/dev/null
 
 # Check filesystem for errors
 fsck $DEVICE'1'
+echo Please wait...
 
 echo 'Done! :D'
 
