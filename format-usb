@@ -5,7 +5,7 @@
 ## Quickly create an msdos partition table and a single, formatted partition
 ## on a given USB flash drive so that it is compatible with Microsoft Windows.
 ##
-## Usage: 
+## Usage:
 ##
 ##         format-usb [device] [optional partition label] [optional fs type]
 ##
@@ -17,6 +17,12 @@
 ##         --exfat
 ##         --none
 ##
+## Additional options:
+##
+##         --zero   : Completely overwrite the device with zero's before
+##                    formatting
+##
+
 if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] ; then
   grep -E '^##[^#]?' "$0" | sed -E 's/## ?//g'
   if [ "$1" == "" ] ; then
@@ -56,6 +62,13 @@ for d in $(mount | grep "$1" | cut -d ' ' -f 1); do
   echo $d
   umount -f $d || exit
 done
+
+# Zero the device if desired
+if [ "$(echo \"$*\" | grep '\--zero')" != "" ] ; then
+    echo "Overwriting $DEVICE with zeros... (This may take a while)"
+    dd if=/dev/zero of=$DEVICE bs=512k
+    echo 'OK!'
+fi
 
 # Overwrite the first 10 MB of the device
 dd if=/dev/zero of=$DEVICE bs=1M count=10
